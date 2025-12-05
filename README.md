@@ -7,6 +7,12 @@ Flask + OpenCV web app to preview a UVC camera and adjust exposure and gain usin
 - `v4l2-ctl` tool (install with `sudo apt install v4l-utils`)
 - Python 3.10+
 
+On Raspberry Pi, install GStreamer for OpenCV capture:
+```bash
+sudo apt update
+sudo apt install -y gstreamer1.0-tools gstreamer1.0-libav gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad
+```
+
 ## Setup
 ```bash
 python -m venv .venv
@@ -34,6 +40,7 @@ Open `http://localhost:5000` in your browser.
 sudo usermod -a -G video "$USER"
 ```
 - If exposure sliders do not reflect actual ranges, read `/api/controls` output and adjust UI accordingly.
+- On Raspberry Pi, the app attempts a GStreamer pipeline `v4l2src device=/dev/video0 ! jpegdec ! videoconvert ! appsink`. Ensure the plugins above are installed.
 
 ## Test harness
 List current controls:
