@@ -21,7 +21,12 @@ class Camera:
             return 0
 
     def _open_capture(self, device):
-        # Try opening by path with V4L2 backend first
+        # Try GStreamer pipeline first (more reliable on Raspberry Pi)
+        gst_pipeline = f"v4l2src device={device} ! image/jpeg,framerate=30/1 ! jpegdec ! videoconvert ! appsink"
+        cap = cv2.VideoCapture(gst_pipeline, cv2.CAP_GSTREAMER)
+        if cap.isOpened():
+            return cap
+        # Try opening by path with V4L2 backend
         cap = cv2.VideoCapture(str(device), cv2.CAP_V4L2)
         if cap.isOpened():
             return cap
