@@ -13,6 +13,11 @@ sudo apt update
 sudo apt install -y gstreamer1.0-tools gstreamer1.0-libav gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad
 ```
 
+If OpenCV can't capture, the app falls back to FFmpeg. Install FFmpeg:
+```bash
+sudo apt install -y ffmpeg
+```
+
 ## Setup
 ```bash
 python -m venv .venv
@@ -25,6 +30,8 @@ Optional environment variables:
 - `FLASK_HOST` (default `0.0.0.0`)
 - `FLASK_PORT` (default `5000`)
 - `FLASK_DEBUG` (default `1`)
+ - `FRAME_WIDTH` (default `640`) and `FRAME_HEIGHT` (default `480`) — used by OpenCV and FFmpeg fallback
+ - `FRAME_RATE` (default `30`) — used by OpenCV and FFmpeg fallback
 
 ## Run
 ```bash
@@ -32,6 +39,10 @@ export CAMERA_DEVICE=/dev/video0
 python app.py
 ```
 Open `http://localhost:5000` in your browser.
+
+Diagnostics:
+- `http://localhost:5000/health` returns whether capture is opened.
+- Server logs print which backend is used (GStreamer/V4L2/FFmpeg).
 
 ## Notes
 - Controls rely on `v4l2-ctl`. Exposure items may vary by camera (e.g., `exposure_auto`, `exposure_absolute`).
@@ -41,6 +52,21 @@ sudo usermod -a -G video "$USER"
 ```
 - If exposure sliders do not reflect actual ranges, read `/api/controls` output and adjust UI accordingly.
 - On Raspberry Pi, the app attempts a GStreamer pipeline `v4l2src device=/dev/video0 ! jpegdec ! videoconvert ! appsink`. Ensure the plugins above are installed.
+
+### Troubleshooting
+- Try alternative devices: `/dev/video1`, `/dev/video2`.
+- Verify formats and controls:
+```bash
+v4l2-ctl -d /dev/video0 --list-formats-ext
+v4l2-ctl -d /dev/video0 --list-ctrls
+```
+- Test GStreamer directly:
+```bash
+gst-launch-1.0 v4l2src device=/dev/video0 ! image/jpeg,framerate=30/1 ! jpegdec ! videoconvert ! autovideosink
+# or YUY2
+gst-launch-1.0 v4l2src device=/dev/video0 ! video/x-raw,format=YUY2,framerate=30/1 ! videoconvert ! autovideosink
+```
+- FFmpeg fallback is used automatically if OpenCV cannot open the device. Ensure `ffmpeg` is installed.
 
 ## Test harness
 List current controls:
