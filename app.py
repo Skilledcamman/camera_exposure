@@ -25,6 +25,12 @@ def stream():
     return Response(camera.mjpeg_stream(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 
+@app.get("/health")
+def health():
+    ok = camera.cap.isOpened()
+    return jsonify({"camera_opened": bool(ok)})
+
+
 @app.get("/api/controls")
 def get_controls():
     ok, out = run_v4l2_ctl(["-l"])
