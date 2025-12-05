@@ -5,12 +5,7 @@ import time
 class Camera:
     def __init__(self, device="/dev/video0", width=640, height=480, fps=30):
         self.device = device
-        idx = self._device_index(device)
-        self.cap = cv2.VideoCapture(idx)
-        if not self.cap.isOpened():
-            # Fallback to index 0 if mapping fails
-            self.cap.release()
-            self.cap = cv2.VideoCapture(0)
+        self.cap = self._open_capture(device)
         if width:
             self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         if height:
@@ -24,6 +19,25 @@ class Camera:
             return int(str(dev).strip().split("video")[-1])
         except Exception:
             return 0
+
+    def _open_capture(self, device):
+        # Try opening by path with V4L2 backend first
+        cap = cv2.VideoCapture(str(device), cv2.CAP_V4L2)
+        if cap.isOpened():
+            return cap
+        # Try opening by integer index derived from path
+        idx = self._device_index(device)
+        cap = cv2.VideoCapture(idx, cv2.CAP_V4L2)
+        if cap.isOpened():
+            return cap
+        # Try a few common indices
+        for i in range(0, 4):
+            cap = cv2.VideoCapture(i, cv2.CAP_V4L2)
+            if cap.isOpened():
+                return cap
+        # Final fallback without specifying backend
+        cap = cv2.VideoCapture(0)
+        return cap
 
     def mjpeg_stream(self):
         while True:
