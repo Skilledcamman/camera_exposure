@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Camera Exposure & Gain Control</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Camera Control</h1>
+    </header>
+    <main>
+      <section class="preview">
+        <img id="stream" src="/stream" alt="Camera Stream" />
+      </section>
+      <section class="controls">
+        <div class="control">
+          <label for="exposure_absolute">Exposure Absolute</label>
+          <input type="range" id="exposure_absolute" min="1" max="10000" step="1" />
+          <span id="exposure_absolute_val"></span>
+        </div>
+        <div class="control">
+          <label for="gain">Gain</label>
+          <input type="range" id="gain" min="0" max="255" step="1" />
+          <span id="gain_val"></span>
+        </div>
+        <div class="control">
+          <label for="exposure_auto">Exposure Auto</label>
+          <select id="exposure_auto">
+            <option value="1">Manual</option>
+            <option value="3">Aperture Priority (Auto)</option>
+          </select>
+        </div>
+        <button id="apply">Apply</button>
+        <pre id="status"></pre>
+      </section>
+    </main>
+    <script src="/static/main.js"></script>
+  </body>
+</html>
