@@ -49,9 +49,19 @@ def get_controls():
 def set_controls():
     data = request.json or {}
     responses = {}
-    for key in ["exposure_absolute", "exposure_auto", "gain"]:
+    for key in ["exposure_absolute", "exposure_auto", "gain", "brightness"]:
         if key in data:
-            val = str(data[key])
+            # Clamp exposure to >= 1 since v4l2 expects positive
+            if key == "exposure_absolute":
+                try:
+                    v = int(data[key])
+                except Exception:
+                    v = 1
+                if v < 1:
+                    v = 1
+                val = str(v)
+            else:
+                val = str(data[key])
             ok, out = run_v4l2_ctl(["-c", f"{key}={val}"])
             responses[key] = {"ok": ok, "out": out}
     status = 200 if all(r.get("ok") for r in responses.values()) else 400

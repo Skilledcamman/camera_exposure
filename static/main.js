@@ -18,6 +18,7 @@ async function applyControls() {
   const payload = {
     exposure_absolute: parseInt(document.getElementById('exposure_absolute').value, 10),
     gain: parseInt(document.getElementById('gain').value, 10),
+    brightness: parseInt(document.getElementById('brightness').value, 10),
     exposure_auto: parseInt(document.getElementById('exposure_auto').value, 10)
   };
   const res = await fetch('/api/controls', {
