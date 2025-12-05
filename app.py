@@ -49,6 +49,11 @@ def get_controls():
 def set_controls():
     data = request.json or {}
     responses = {}
+    # OpenCV exposure (allows negative values)
+    if "exposure" in data:
+        ok, out = camera.set_opencv_exposure(data.get("exposure"))
+        responses["opencv_exposure"] = {"ok": ok, "out": out}
+
     for key in ["exposure_absolute", "exposure_auto", "gain", "brightness"]:
         if key in data:
             # Clamp exposure to >= 1 since v4l2 expects positive

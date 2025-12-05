@@ -21,6 +21,11 @@ async function applyControls() {
     brightness: parseInt(document.getElementById('brightness').value, 10),
     exposure_auto: parseInt(document.getElementById('exposure_auto').value, 10)
   };
+  // Optional OpenCV exposure (supports negatives); add if present in UI
+  const expInput = document.getElementById('exposure');
+  if (expInput) {
+    payload.exposure = parseFloat(expInput.value);
+  }
   const res = await fetch('/api/controls', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

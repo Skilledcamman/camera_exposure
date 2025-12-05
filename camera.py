@@ -43,23 +43,9 @@ class Camera:
         if cap.isOpened():
             print(f"Opened camera via V4L2 path: {device}")
             return cap
-        # Try opening by integer index derived from path
-        idx = self._device_index(device)
-        cap = cv2.VideoCapture(idx, cv2.CAP_V4L2)
-        if cap.isOpened():
-            print(f"Opened camera via V4L2 index: {idx}")
-            return cap
-        # Try a few common indices
-        for i in range(0, 4):
-            cap = cv2.VideoCapture(i, cv2.CAP_V4L2)
-            if cap.isOpened():
-                print(f"Opened camera via fallback index: {i}")
-                return cap
-        # Final fallback without specifying backend
-        cap = cv2.VideoCapture(0)
-        if cap.isOpened():
-            print("Opened camera via final fallback index 0")
-        return cap
+        # Do NOT fallback to other indices; we must honor the requested device.
+        # Return None to allow FFmpeg fallback on the exact device.
+        return None
 
     def _build_gstreamer_pipeline(self, device):
         # Detect supported formats to choose MJPEG or YUY2
@@ -128,3 +114,15 @@ class Camera:
                     self.ffmpeg.terminate()
                 except Exception:
                     pass
+
+    def set_opencv_exposure(self, value):
+        # Attempt to set exposure via OpenCV. Many UVC drivers interpret exposure in log units.
+        # We accept negative values and pass through to backend; driver decides mapping.
+        if not self.cap or not self.cap.isOpened():
+            return False, "OpenCV capture not active"
+        try:
+            ok = self.cap.set(cv2.CAP_PROP_EXPOSURE, float(value))
+            return bool(ok), f"CAP_PROP_EXPOSURE set to {value}"
+        except Exception as e:
+            return False, str(e)
+
